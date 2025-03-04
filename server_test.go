@@ -6,14 +6,19 @@ import (
 )
 
 const (
+	USERNAME       string = "neecosanudo"
 	NOT_A_USERNAME string = "not_a_real_username_on_github"
 )
 
 func TestGetUserActivity(t *testing.T) {
-	t.Run("assert status Not Found", func(t *testing.T) {
-		response := getUserActivity(NOT_A_USERNAME)
 
-		assertStatus(t, response.StatusCode, http.StatusNotFound)
+	/* Almaceno en variables dos peticiones distintas para no realizar peticiones a la API en cada test */
+	responseOk := getUserActivity(USERNAME)
+	responseNotFound := getUserActivity(NOT_A_USERNAME)
+
+	t.Run("assert correct status", func(t *testing.T) {
+		assertStatus(t, responseOk.StatusCode, http.StatusOK)
+		assertStatus(t, responseNotFound.StatusCode, http.StatusNotFound)
 	})
 }
 
