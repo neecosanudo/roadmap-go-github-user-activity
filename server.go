@@ -5,8 +5,16 @@ import (
 	"net/http"
 )
 
-func getUserActivity(username string) *http.Response {
-	response, _ := http.Get(fmt.Sprintf("https://api.github.com/users/%s/events", username))
+const (
+	ERR_FETCH_USER_ACTIVITY string = "error fetching user activity for %s: %w"
+)
 
-	return response
+func getUserActivity(username string) (*http.Response, error) {
+	response, err := http.Get(fmt.Sprintf("https://api.github.com/users/%s/events", username))
+
+	if err != nil {
+		return nil, fmt.Errorf(ERR_FETCH_USER_ACTIVITY, username, err)
+	}
+
+	return response, nil
 }
