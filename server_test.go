@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
@@ -36,6 +38,26 @@ func TestGetUserActivity(t *testing.T) {
 	})
 }
 
+func TestGetUserEvents(t *testing.T) {
+	mockData := []GithubEvent{{
+		Type: "PushEvent",
+		Repo: struct {
+			ID   int    `json:"id"`
+			Name string `json:"name"`
+		}{ID: 123, Name: "neecosanudo/roadmap-go-github-user-activity"},
+	}}
+
+	t.Run("validation of the number of events extracted from the mocked response", func(t *testing.T) {
+		response := mockGetUserActivityResponse(mockData)
+
+		userEvents := getUserEvents(response)
+
+		if len(mockData) != len(userEvents) {
+			t.Errorf("want %d events, but got %d", len(mockData), len(userEvents))
+		}
+	})
+}
+
 /* Abstracciones para hacer el código más legible */
 func assertStatus(t testing.TB, got, want int) {
 	t.Helper()
@@ -47,4 +69,14 @@ func assertStatus(t testing.TB, got, want int) {
 
 func mockupRequestToReturnErr() (*http.Response, error) {
 	return nil, fmt.Errorf("simulated network error")
+}
+
+func mockGetUserActivityResponse(mockData []GithubEvent) *http.Response {
+
+	mockJSON, _ := json.Marshal(mockData)
+
+	response := httptest.NewRecorder()
+	response.Body.Write(mockJSON)
+
+	return response.Result()
 }
